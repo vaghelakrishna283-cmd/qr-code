@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android
 
 on:
   workflow_dispatch:
@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-24.04
 
     steps:
@@ -22,7 +23,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
           cache: gradle
 
       - name: Set up Android SDK
@@ -34,15 +35,45 @@ jobs:
             "platforms;android-35" \
             "build-tools;35.0.0"
 
+      - name: Make Gradle executable
+        run: chmod +x gradlew
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build APK
-        run: gradle assembleDebug --stacktrace
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
-      - name: Upload APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: upi-qr-payment-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # ------------------------------------------------------------
+      # Release build
+      #
+      # Uncomment this section after configuring the signing secrets
+      # and release signing configuration in app/build.gradle.
+      # ------------------------------------------------------------
+
+      # - name: Build Release APK
+      #   run: ./gradlew assembleRelease --stacktrace
+
+      # - name: Build Release AAB
+      #   run: ./gradlew bundleRelease --stacktrace
+
+      # - name: Upload Release APK
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: upi-qr-payment-release-apk
+      #     path: app/build/outputs/apk/release/app-release.apk
+      #     if-no-files-found: error
+
+      # - name: Upload Release AAB
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: upi-qr-payment-release-aab
+      #     path: app/build/outputs/bundle/release/app-release.aab
+      #     if-no-files-found: error
